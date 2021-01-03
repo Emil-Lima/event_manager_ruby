@@ -11,7 +11,7 @@
     Political activism is at the heart of any democracy and your voice needs to be heard.
     Please consider reaching out to your following representatives:
   </p>
-  <% if phonenumber != nil %>
+  <% unless phonenumber.nil? %>
   <p>You will receive mobile alerts on the following number: <%= phonenumber %>.</p>
   <% end %>
   <table>

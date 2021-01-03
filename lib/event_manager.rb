@@ -1,19 +1,19 @@
+# frozen_string_literal: true
+
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
 
 def clean_zipcode(zipcode)
-  zipcode.to_s.rjust(5,"0")[0..4]
+  zipcode.to_s.rjust(5, '0')[0..4]
 end
 
 def clean_phone_number(number)
-  number = number.to_s.gsub!(/\D*/, "")
-  unless number.length > 11 or number.length < 10
-    number.rjust(11, "0")[1..11]
-  end
+  number = number.to_s.gsub!(/\D*/, '')
+  number.rjust(11, '0')[1..11] unless (number.length > 11) || (number.length < 10)
 end
 
-def legislators_by_zipcode(zip)
+def legislators_by_zipcode(_zip)
   civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
   civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
 
@@ -21,28 +21,28 @@ def legislators_by_zipcode(zip)
     civic_info.representative_info_by_address(
       address: zipcode,
       levels: 'country',
-      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+      roles: %w[legislatorUpperBody legislatorLowerBody]
     ).officials
-  rescue
-    "You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials"
+  rescue StandardError
+    'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
   end
 end
 
-def save_thank_you_letter(id,form_letter)
-  Dir.mkdir("output") unless Dir.exists?("output")
+def save_thank_you_letter(id, form_letter)
+  Dir.mkdir('output') unless Dir.exist?('output')
 
   filename = "output/thanks_#{id}.html"
 
-  File.open(filename,'w') do |file|
+  File.open(filename, 'w') do |file|
     file.puts form_letter
   end
 end
 
-puts "EventManager initialized."
+puts 'EventManager initialized.'
 
 contents = CSV.open '../event_attendees.csv', headers: true, header_converters: :symbol
 
-template_letter = File.read "../form_letter.erb"
+template_letter = File.read '../form_letter.erb'
 erb_template = ERB.new template_letter
 
 contents.each do |row|
@@ -54,5 +54,5 @@ contents.each do |row|
 
   form_letter = erb_template.result(binding)
 
-  save_thank_you_letter(id,form_letter)
+  save_thank_you_letter(id, form_letter)
 end
